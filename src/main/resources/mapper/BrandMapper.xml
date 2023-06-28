@@ -5,9 +5,38 @@
 <mapper namespace="mapper.BrandMapper">
 
     <resultMap id="brandResult" type="pojo.Brand">
-        <result column="brand_name" property="brandName" />
-        <result column="company_name" property="companyName" />
+        <result column="brand_name" property="brandName"/>
+        <result column="company_name" property="companyName"/>
     </resultMap>
+
+    <insert id="add" useGeneratedKeys="true" keyProperty="id">
+        insert into tb_brand(brand_name, company_name, ordered, description, status)
+        values(#{brandName}, #{companyName}, #{ordered}, #{description}, #{status});
+    </insert>
+
+
+    <update id="update">
+        update tb_brand
+        set brand_name = #{brandName},
+        company_name = #{companyName},
+        ordered = #{ordered},
+        description = #{description},
+        status = #{status}
+        where id = #{id};
+    </update>
+
+    <delete id="deleteById">
+        delete from tb_brand
+        where id = #{id};
+    </delete>
+
+    <delete id="deleteByIds">
+        delete from tb_brand
+        where id in
+        <foreach collection="ids" item="id" separator="," open="(" close=");">
+            #{id}
+        </foreach>
+    </delete>
 
 
     <select id="selectAll" resultMap="brandResult">
@@ -22,13 +51,49 @@
         where id = #{id};
     </select>
 
-<!--    条件查询-->
+    <!--    条件查询-->
+    <!--    <select id="selectByCondition" resultMap="brandResult">-->
+    <!--        select *-->
+    <!--        from tb_brand-->
+    <!--        where status = #{status}-->
+    <!--            and company_name like #{companyName}-->
+    <!--            and brand_name like #{brandName};-->
+    <!--    </select>-->
+
+    <!--    动态条件查询-->
     <select id="selectByCondition" resultMap="brandResult">
         select *
         from tb_brand
-        where status = #{status}
-            and company_name like #{companyName}
-            and brand_name like #{brandName};
+        <!--        where 1 = 1 -->
+        <where>
+            <if test="status != null">
+                status = #{status}
+            </if>
+            <if test="companyName != null and companyName != ''">
+                and company_name like #{companyName}
+            </if>
+            <if test="brandName != null and brandName != ''">
+                and brand_name like #{brandName};
+            </if>
+        </where>
+    </select>
+    <select id="selectBySingleCondition" resultType="pojo.Brand">
+        select *
+        from tb_brand
+        where
+        <where>
+            <choose>
+                <when test="status != null">
+                    status = #{status}
+                </when>
+                <when test="companyName != null and companyName != ''">
+                    company_name like #{companyName}
+                </when>
+                <when test="brandName != null and brandName != ''">
+                    brand_name like #{brandName}
+                </when>
+            </choose>
+        </where>
     </select>
 
 
